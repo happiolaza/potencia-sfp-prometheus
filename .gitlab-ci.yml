@@ -1,6 +1,5 @@
 stages:
   - build
-  - update-manifest
 
 variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
@@ -18,14 +17,3 @@ build:
     - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - sh scripts/build.sh
-
-update-manifest:
-  stage: update-manifest
-  image:
-    name: $HARBOR_REGISTRY/$HARBOR_PROJECT/kaniko-git:debug
-    entrypoint: [""]
-  needs: [build]
-  before_script:
-    - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
-  script:
-    - sh scripts/update-manifest.sh
