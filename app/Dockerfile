@@ -1,9 +1,4 @@
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+FROM whiteregistry.cuyows.tcloud.ar/whitecicd-pipeline/python-sfp-base:3.11
 
 COPY potencia-prometehus-cm.py ./
 COPY element.ssh ./
