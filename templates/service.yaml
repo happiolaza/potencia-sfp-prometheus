@@ -1,0 +1,26 @@
+kind: ServiceAccount
+metadata:
+  name: potencia-sfp-barracas
+  labels:
+    helm.sh/chart: potencia-sfp-barracas-0.1.0
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "potencia-sfp-barracas.fullname" . }}
+  labels:
+{{ include "potencia-sfp-barracas.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

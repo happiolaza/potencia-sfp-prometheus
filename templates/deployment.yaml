@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "potencia-sfp-barracas.fullname" . }}
+  labels:
+{{ include "potencia-sfp-barracas.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "potencia-sfp-barracas.serviceAccountName" . }}
+      securityContext: {}
+      containers:
+        - name: {{ include "potencia-sfp-barracas.name" . }}
+          securityContext: {}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/element.ssh
+              subPath: element.ssh
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "potencia-sfp-barracas.fullname" . }}
+            defaultMode: 420
+

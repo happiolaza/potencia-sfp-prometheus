@@ -1,0 +1,114 @@
+---
+# Source: potencia-sfp-barracas/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: potencia-sfp-barracas
+  labels:
+    helm.sh/chart: potencia-sfp-barracas-0.1.0
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: potencia-sfp-barracas/templates/configmaps.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: potencia-sfp-barracas
+  labels:
+    helm.sh/chart: potencia-sfp-barracas-0.1.0
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  element.ssh: |
+    172.28.9.134	PBL-BRC1-001
+    172.28.9.135	PBL-BRC1-002
+    172.28.9.136	PSL-BRC1-001
+    172.28.9.137	PSL-BRC1-002
+    172.28.9.138	PSL-BRC1-003
+    172.28.9.139	PSL-BRC1-004
+    172.28.9.140	PSL-BRC1-005
+    172.28.9.141	PSL-BRC1-006
+    172.28.9.142	PSL-BRC1-007
+    172.28.9.143	PSL-BRC1-008
+    172.28.9.166	PSL-BRC1-009
+    172.28.9.167	PSL-BRC1-010
+    172.28.9.168	PSL-BRC1-011
+    172.28.9.169	PSL-BRC1-012
+    172.28.9.170	PSL-BRC1-013
+    172.28.9.171	PSL-BRC1-014
+---
+# Source: potencia-sfp-barracas/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: potencia-sfp-barracas
+  labels:
+    helm.sh/chart: potencia-sfp-barracas-0.1.0
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+---
+# Source: potencia-sfp-barracas/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: potencia-sfp-barracas
+  labels:
+    helm.sh/chart: potencia-sfp-barracas-0.1.0
+    app.kubernetes.io/name: potencia-sfp-barracas
+    app.kubernetes.io/instance: potencia-sfp-barracas
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: potencia-sfp-barracas
+      app.kubernetes.io/instance: potencia-sfp-barracas
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: potencia-sfp-barracas
+        app.kubernetes.io/instance: potencia-sfp-barracas
+    spec:
+      serviceAccountName: potencia-sfp-barracas
+      securityContext:
+        {}
+      containers:
+        - name: potencia-sfp-barracas
+          securityContext:
+            {}
+          image: "happiolaza/potencia-sfp-prometehus-cm:1.4"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: /app/element.ssh
+              name: config-volume
+              mountPath: /app/element.ssh
+              subPath: element.ssh
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: potencia-sfp-barracas
+        name: config-volume
+

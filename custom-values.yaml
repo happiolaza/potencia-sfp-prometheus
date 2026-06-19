@@ -1,0 +1,38 @@
+replicaCount: 1
+
+image:
+  repository: happiolaza/potencia-sfp-prometehus-cm
+  tag: "1.4"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5000
+  targetPort: http
+
+serviceAccount:
+  create: true
+  name: potencia-sfp-barracas
+
+fullnameOverride: potencia-sfp-barracas
+
+config:
+  elementSsh: |-
+    172.28.9.134	PBL-BRC1-001
+    172.28.9.135	PBL-BRC1-002
+    172.28.9.136	PSL-BRC1-001
+    172.28.9.137	PSL-BRC1-002
+    172.28.9.138	PSL-BRC1-003
+    172.28.9.139	PSL-BRC1-004
+    172.28.9.140	PSL-BRC1-005
+    172.28.9.141	PSL-BRC1-006
+    172.28.9.142	PSL-BRC1-007
+    172.28.9.143	PSL-BRC1-008
+    172.28.9.166	PSL-BRC1-009
+    172.28.9.167	PSL-BRC1-010
+    172.28.9.168	PSL-BRC1-011
+    172.28.9.169	PSL-BRC1-012
+    172.28.9.170	PSL-BRC1-013
+    172.28.9.171	PSL-BRC1-014
+
+resources: {}
