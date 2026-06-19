@@ -1,5 +1,6 @@
 stages:
   - build
+  - update-manifest
 
 variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
@@ -26,3 +27,19 @@ build:
       --skip-tls-verify-registry $HARBOR_REGISTRY
       --destination $HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
       --destination $HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:latest
+
+update-manifest:
+  stage: update-manifest
+  image:
+    name: $HARBOR_REGISTRY/$HARBOR_PROJECT/kaniko-git:debug
+    entrypoint: [""]
+  needs: [build]
+  before_script:
+    - git clone https://gitlab+deploy-token-1:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
+  script:
+    - sed -i "s|^  tag: .*|  tag: $CI_COMMIT_SHORT_SHA|" deploy/values.yaml
+    - git config user.name "GitLab CI"
+    - git config user.email "ci@whitecicd"
+    - git add deploy/values.yaml
+    - git commit -m "chore: update image tag to $CI_COMMIT_SHORT_SHA [skip ci]"
+    - git push https://gitlab+deploy-token-1:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git HEAD:main

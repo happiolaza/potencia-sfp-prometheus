@@ -23,14 +23,49 @@ Expone métricas de **rx-power**, **tx-power** y **tx-bias-current** por interfa
 └── samples/
 ```
 
+## Flujo completo (CI/CD → ArgoCD)
+
+```
+git push a GitLab
+       │
+       ▼
+┌─────────────────────┐
+│  Pipeline CI         │
+│  1. build + push     │
+│     imagen a Harbor  │
+│  2. update tag en    │
+│     values.yaml      │
+│  3. commit [skip ci] │
+└────────┬────────────┘
+         │ push con nuevo tag
+         ▼
+┌─────────────────────┐
+│  ArgoCD detecta     │
+│  cambio en git      │
+│  → sync automático  │
+│  → rollout nueva    │
+│     versión         │
+└─────────────────────┘
+```
+
 ## Build de la imagen
+
+### Manual (local)
 
 ```sh
 cd app
 ./build-image.sh
 ```
 
-Requiere Docker o Podman. Pushea la imagen a `happiolaza/potencia-sfp-prometehus-cm:1.4` (configurable en `deploy/values.yaml`).
+Requiere Docker o Podman. Pushea la imagen a `happiolaza/potencia-sfp-prometehus-cm:1.4`.
+
+### Automático (GitLab CI)
+
+Al pushear a `main` en GitLab, el pipeline:
+1. Buildéa la imagen con Kaniko usando la base de Harbor
+2. Pushea a Harbor: `power-metrics/potencia-sfp-prometehus-cm:<sha>` y `latest`
+3. Actualiza `deploy/values.yaml` con el nuevo SHA y lo commitea con `[skip ci]`
+4. ArgoCD detecta el cambio y sincroniza automáticamente
 
 ## Despliegue con Helm
 

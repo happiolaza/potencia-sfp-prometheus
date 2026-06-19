@@ -1,8 +1,8 @@
 replicaCount: 1
 
 image:
-  repository: happiolaza/potencia-sfp-prometehus-cm
-  tag: "1.4"
+  repository: whiteregistry.cuyows.tcloud.ar/power-metrics/potencia-sfp-prometehus-cm
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
