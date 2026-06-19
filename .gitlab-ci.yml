@@ -4,6 +4,7 @@ stages:
 variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
   HARBOR_PROJECT: whitecicd-pipeline
+  DESTINATION_PROJECT: power-metrics
   IMAGE_NAME: potencia-sfp-prometehus-cm
   GIT_STRATEGY: none
 
@@ -23,5 +24,5 @@ build:
       --context ${CI_PROJECT_DIR}/app
       --dockerfile ${CI_PROJECT_DIR}/app/Dockerfile
       --skip-tls-verify-registry $HARBOR_REGISTRY
-      --destination $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-      --destination $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest
+      --destination $HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+      --destination $HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:latest
