@@ -1,0 +1,12 @@
+site:
+  name: republica
+
+config:
+  elementSsh: |-
+    172.28.11.1	PBL-RPB1-001
+    172.28.11.2	PBL-RPB1-002
+    172.28.11.3	PSL-RPB1-001
+    172.28.11.4	PSL-RPB1-002
+    172.28.11.5	PSL-RPB1-003
+    172.28.11.6	PSL-RPB1-004
+    172.28.11.7	PSL-RPB1-005

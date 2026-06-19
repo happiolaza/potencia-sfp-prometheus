@@ -8,6 +8,8 @@ spec:
   - list:
       elements:
       - site: barracas
+      - site: cuyo
+      - site: republica
   template:
     metadata:
       name: potencia-sfp-{{ site }}
