@@ -37,7 +37,7 @@ update-manifest:
   before_script:
     - git clone https://gitlab+deploy-token-1:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
-    - sed -i "s|^  tag: .*|  tag: $CI_COMMIT_SHORT_SHA|" deploy/values.yaml
+    - python3 scripts/update-tag.py
     - git config user.name "GitLab CI"
     - git config user.email "ci@whitecicd"
     - git add deploy/values.yaml
