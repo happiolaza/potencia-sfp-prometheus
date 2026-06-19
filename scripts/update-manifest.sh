@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+apk add --no-cache curl
+
 sed -i "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml
 
 git config user.name "GitLab CI"
