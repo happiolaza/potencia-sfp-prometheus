@@ -138,8 +138,8 @@ Configuradas en **Settings > CI/CD > Variables** del proyecto:
 | Variable | Valor | Masked |
 |----------|-------|--------|
 | `GIT_DEPLOY_TOKEN` | Token de deploy con scope `read_repository` | ✅ |
-| `HARBOR_USER` | `admin` | ✅ |
-| `HARBOR_PASSWORD` | `TefAr123` | ✅ |
+| `HARBOR_USER` | Usuario de Harbor | ✅ |
+| `HARBOR_PASSWORD` | Password de Harbor | ✅ |
 
 > Nota: La autenticación a Harbor está hardcodeada temporalmente en `.gitlab-ci.yml`. Las variables `HARBOR_USER`/`HARBOR_PASSWORD` están definidas pero aún no se usan en el pipeline (el auth se genera inline). Pendiente de migrar.
 
