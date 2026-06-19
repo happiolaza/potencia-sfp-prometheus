@@ -85,12 +85,3 @@ Esto crea un Application en el namespace `argocd`. ArgoCD se encarga del sync au
 1. ArgoCD instalado en el cluster
 2. El Application usa `https://whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git` como source. Si se cambia de repo, actualizar `deploy/argocd/application.yaml`
 3. Las credenciales SSH deben existir como Secret antes del sync (ver sección anterior)
-
-### Push a ambos repositorios
-
-El repo se sincroniza con GitHub y GitLab:
-
-```sh
-git push origin main      # GitHub
-git push gitlab main      # GitLab
-```
