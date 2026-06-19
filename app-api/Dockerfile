@@ -1,6 +1,4 @@
-FROM python:3.11-slim
-
-RUN pip install --no-cache-dir requests Flask gunicorn
+FROM whiteregistry.cuyows.tcloud.ar/whitecicd-pipeline/python-sfp-api-base:3.11
 
 COPY potencia-prometehus-cm.py ./
 COPY element.ssh ./
