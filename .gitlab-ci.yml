@@ -3,7 +3,7 @@ stages:
 
 variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
-  HARBOR_PROJECT: power-metrics
+  HARBOR_PROJECT: whitecicd-pipeline
   IMAGE_NAME: potencia-sfp-prometehus-cm
 
 build:
