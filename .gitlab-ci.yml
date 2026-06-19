@@ -5,6 +5,7 @@ variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
   HARBOR_PROJECT: whitecicd-pipeline
   IMAGE_NAME: potencia-sfp-prometehus-cm
+  GIT_STRATEGY: none
 
 build:
   stage: build
@@ -16,6 +17,7 @@ build:
   before_script:
     - mkdir -p $DOCKER_CONFIG
     - echo "{\"auths\":{\"$HARBOR_REGISTRY\":{\"auth\":\"$(echo -n ${HARBOR_USER}:${HARBOR_PASSWORD} | base64)\"}}}" > $DOCKER_CONFIG/config.json
+    - git clone https://gitlab+deploy-token-1:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - /kaniko/executor
       --context ${CI_PROJECT_DIR}/app
