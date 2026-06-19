@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git
     targetRevision: HEAD
-    path: .
+    path: deploy
     helm:
       valueFiles:
         - values.yaml
