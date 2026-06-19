@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-python3 scripts/update-tag.py
+sed -i "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml
 
 git config user.name "GitLab CI"
 git config user.email "ci@whitecicd"
