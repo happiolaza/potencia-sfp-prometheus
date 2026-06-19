@@ -7,46 +7,127 @@ Expone métricas de **rx-power**, **tx-power** y **tx-bias-current** por interfa
 ## Estructura del repositorio
 
 ```
-├── app/                    # Código fuente y build de la imagen Docker
+├── app/                           # Código fuente y build de la imagen Docker
 │   ├── Dockerfile
 │   ├── build-image.sh
 │   ├── requirements.txt
 │   ├── potencia-prometehus-cm.py
-│   └── element.ssh           # Mapeo IP -> nombre de switch
-├── deploy/                 # Helm chart + manifiesto ArgoCD
+│   └── element.ssh                  # Mapeo IP -> nombre de switch
+├── deploy/                        # Helm chart multi-sitio + manifiestos ArgoCD
 │   ├── Chart.yaml
-│   ├── values.yaml
-│   ├── custom-values.yaml
+│   ├── values.yaml                  # Valores base (site.name vacío)
+│   ├── values-barracas.yaml         # Switches de Barracas
+│   ├── values-cuyo.yaml             # Switches de Cuyo
+│   ├── values-republica.yaml        # Switches de República
 │   ├── templates/
+│   │   ├── _helpers.tpl
+│   │   ├── configmap.yaml
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   └── serviceaccount.yaml
 │   └── argocd/
-│       └── application.yaml
-└── samples/
+│       └── application-set.yaml     # ApplicationSet → 1 App por sitio
+└── scripts/
+    └── build.sh                     # Script de build del pipeline CI
 ```
 
-## Flujo completo (CI/CD → ArgoCD)
+## Arquitectura de despliegue
+
+Cada sitio monitoreado tiene su propio pod independiente con sus switches. El chart es genérico: se instancia una vez por sitio con un archivo de valores específico.
+
+| Sitio | Application | Deployment | Service | Switches |
+|-------|-------------|------------|---------|----------|
+| barracas | `potencia-sfp-barracas` | `potencia-barracas` | `potencia-barracas` | 16 |
+| cuyo | `potencia-sfp-cuyo` | `potencia-cuyo` | `potencia-cuyo` | 10 |
+| republica | `potencia-sfp-republica` | `potencia-republica` | `potencia-republica` | 7 |
+
+## Flujo CI/CD
 
 ```
-git push a GitLab
+git push a GitLab (cambios en app/)
        │
        ▼
 ┌─────────────────────┐
 │  Pipeline CI         │
-│  1. build + push     │
-│     imagen a Harbor  │
-│  2. update tag en    │
-│     values.yaml      │
-│  3. commit [skip ci] │
+│  build + push        │
+│  imagen a Harbor     │
+│  (<sha> y latest)    │
 └────────┬────────────┘
-         │ push con nuevo tag
+         │
+         ▼  (manual: actualizar tag en values-<sitio>.yaml)
+         │
          ▼
 ┌─────────────────────┐
 │  ArgoCD detecta     │
 │  cambio en git      │
 │  → sync automático  │
-│  → rollout nueva    │
-│     versión         │
+│  → rollout nueva     │
+│     versión          │
 └─────────────────────┘
 ```
+
+El pipeline solo se dispara cuando cambian archivos en `app/`, `.gitlab-ci.yml` o `scripts/`. Los cambios en `deploy/` **no** disparan build.
+
+## Despliegue con Helm
+
+```sh
+cd deploy
+helm upgrade --install potencia-barracas . \
+  --namespace grafana-operaciones \
+  --create-namespace \
+  -f values-barracas.yaml
+```
+
+Para otro sitio, cambiar el values file:
+
+```sh
+helm upgrade --install potencia-cuyo . \
+  --namespace grafana-operaciones \
+  --create-namespace \
+  -f values-cuyo.yaml
+```
+
+### Credenciales SSH
+
+Cada sitio necesita un Secret con las credenciales SSH de sus switches. El nombre sigue el patrón `potencia-<sitio>-ssh`:
+
+```sh
+kubectl create secret generic potencia-barracas-ssh \
+  --namespace grafana-operaciones \
+  --from-literal=username=<usuario> \
+  --from-literal=password=<password>
+```
+
+Se puede overridear con `existingSecret` en values.
+
+## Despliegue con ArgoCD
+
+El archivo `deploy/argocd/application-set.yaml` define un ApplicationSet que crea una Application de ArgoCD por cada sitio.
+
+```sh
+kubectl apply -f deploy/argocd/application-set.yaml
+```
+
+Esto crea las aplicaciones en el namespace `argocd`:
+
+| Application | Values file |
+|---|---|
+| `potencia-sfp-barracas` | `values-barracas.yaml` |
+| `poltencia-sfp-cuyo` | `values-cuyo.yaml` |
+| `potencia-sfp-republica` | `values-republica.yaml` |
+
+Políticas de sync:
+- **Auto-prune**: elimina recursos que ya no están en el chart
+- **Self-heal**: revierte cambios manuales al estado del repositorio
+- **CreateNamespace**: crea `grafana-operaciones` si no existe
+- **Retry**: hasta 5 reintentos con backoff exponencial
+
+### Agregar un nuevo sitio
+
+1. Crear `deploy/values-<sitio>.yaml` con los switches del sitio
+2. Agregar `- site: <sitio>` al `list` generator en `deploy/argocd/application-set.yaml`
+3. Commitear y pushear a GitLab
+4. ArgoDC sincroniza automáticamente y crea el nuevo deployment
 
 ## Build de la imagen
 
@@ -57,73 +138,20 @@ cd app
 ./build-image.sh
 ```
 
-Requiere Docker o Podman. Pushea la imagen a `happiolaza/potencia-sfp-prometehus-cm:1.4`.
-
 ### Automático (GitLab CI)
 
-Al pushear a `main` en GitLab, el pipeline:
-1. Buildéa la imagen con Kaniko usando la base de Harbor
+Al pushear cambios en `app/` a `main` en GitLab, el pipeline:
+
+1. Kaniko buildea la imagen usando la base de Harbor
 2. Pushea a Harbor: `power-metrics/potencia-sfp-prometehus-cm:<sha>` y `latest`
-3. Actualiza `deploy/values.yaml` con el nuevo SHA y lo commitea con `[skip ci]`
-4. ArgoCD detecta el cambio y sincroniza automáticamente
 
-## Despliegue con Helm
+### Disparar el pipeline manualmente
 
-```sh
-cd deploy
-helm upgrade --install potencia-sfp-barracas . \
-  --namespace grafana-operaciones \
-  --create-namespace
-```
-
-Usa `values.yaml` por defecto. Para usar la config específica de Barracas:
-
-```sh
-helm upgrade --install potencia-sfp-barracas . \
-  --namespace grafana-operaciones \
-  --create-namespace \
-  -f custom-values.yaml
-```
-
-### Credenciales SSH
-
-Antes de desplegar, crear un Secret con las credenciales de los switches:
-
-```sh
-kubectl create secret generic potencia-sfp-barracas-ssh \
-  --namespace grafana-operaciones \
-  --from-literal=username=<usuario> \
-  --from-literal=password=<password>
-```
-
-El nombre del Secret se forma como `<fullname>-ssh`. Se puede overridear con `existingSecret` en values.
-
-## Despliegue con ArgoCD
-
-El manifiesto `deploy/argocd/application.yaml` define un Application de ArgoCD que apunta a la carpeta `deploy/` del repositorio.
-
-Para aplicarlo:
-
-```sh
-kubectl apply -f deploy/argocd/application.yaml
-```
-
-Esto crea un Application en el namespace `argocd`. ArgoCD se encarga del sync automático con las siguientes políticas:
-
-- **Auto-prune**: elimina recursos que ya no están en el chart
-- **Self-heal**: revierte cambios manuales al estado del repositorio
-- **CreateNamespace**: crea `grafana-operaciones` si no existe
-- **Retry**: hasta 5 reintentos con backoff exponencial
-
-### Requisitos para ArgoCD
-
-1. ArgoCD instalado en el cluster
-2. El Application usa `https://whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git` como source. Si se cambia de repo, actualizar `deploy/argocd/application.yaml`
-3. Las credenciales SSH deben existir como Secret antes del sync (ver sección anterior)
+1. Ir a **Build > Pipelines** en el proyecto de GitLab
+2. Click en **Run pipeline**
+3. Seleccionar `main` y click en **Run pipeline**
 
 ## CI/CD Pipeline (GitLab)
-
-El pipeline buildea la imagen Docker automáticamente al pushear a `main` en GitLab.
 
 ### Infraestructura
 
@@ -151,20 +179,8 @@ El pipeline buildea la imagen Docker automáticamente al pushear a `main` en Git
 
 1. El runner de GitLab (Kubernetes executor) levanta un pod con la imagen `kaniko-git`
 2. Clona el repo usando un **deploy token** (`GIT_DEPLOY_TOKEN`)
-3. Kaniko buildea la imagen usando la base de Harbor (sin `pip install`)
+3. Kaniko buildea la imagen usando la base de Harbor
 4. Pushea la imagen final a Harbor con tags: `latest` + SHA del commit
-
-### Disparar el pipeline manualmente
-
-1. Ir a **Build > Pipelines** en el proyecto de GitLab
-2. Click en **Run pipeline**
-3. Seleccionar `main` y click en **Run pipeline**
-
-O automáticamente con cada `git push` a `main`:
-
-```sh
-git push gitlab main
-```
 
 ### Variables de CI/CD necesarias
 
@@ -175,18 +191,6 @@ Configuradas en **Settings > CI/CD > Variables** del proyecto:
 | `GIT_DEPLOY_TOKEN` | Token de deploy con scope `read_repository` | ✅ |
 | `HARBOR_USER` | Usuario de Harbor | ✅ |
 | `HARBOR_PASSWORD` | Password de Harbor | ✅ |
-
-> Nota: La autenticación a Harbor está hardcodeada temporalmente en `.gitlab-ci.yml`. Las variables `HARBOR_USER`/`HARBOR_PASSWORD` están definidas pero aún no se usan en el pipeline (el auth se genera inline). Pendiente de migrar.
-
-### Deploy token
-
-Creado via API con scope `read_repository`. Si expira o se pierde, regenerar:
-
-```sh
-curl -X POST --header "PRIVATE-TOKEN: <token>" \
-  "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/195/deploy_tokens" \
-  -d "name=gitlab-runner-token&scopes[]=read_repository"
-```
 
 ### Troubleshooting
 
