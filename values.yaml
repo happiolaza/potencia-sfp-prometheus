@@ -14,8 +14,14 @@ serviceAccount:
   create: true
   name: ""
 
+namespace:
+  create: false
+  name: ""
+
 fullnameOverride: ""
 nameOverride: ""
+
+existingSecret: ""
 
 config:
   elementSsh: |-
@@ -37,3 +43,6 @@ config:
     172.28.9.171	PSL-BRC1-014
 
 resources: {}
+
+probes:
+  enabled: true
