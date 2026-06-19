@@ -1,0 +1,5 @@
+FROM alpine:3.19
+RUN apk add --no-cache git
+COPY --from=whiteregistry.cuyows.tcloud.ar/whitecicd-pipeline/kaniko-executor:debug /kaniko /kaniko
+ENV DOCKER_CONFIG /kaniko/.docker
+ENTRYPOINT ["/kaniko/executor"]
