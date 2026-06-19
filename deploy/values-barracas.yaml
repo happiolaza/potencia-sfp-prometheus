@@ -1,20 +1,5 @@
-replicaCount: 1
-
-image:
-  repository: happiolaza/potencia-sfp-prometehus-cm
-  tag: "1.4"
-  pullPolicy: IfNotPresent
-
-service:
-  type: ClusterIP
-  port: 5000
-  targetPort: http
-
-serviceAccount:
-  create: true
-  name: potencia-sfp-barracas
-
-fullnameOverride: potencia-sfp-barracas
+site:
+  name: barracas
 
 config:
   elementSsh: |-
@@ -34,5 +19,3 @@ config:
     172.28.9.169	PSL-BRC1-012
     172.28.9.170	PSL-BRC1-013
     172.28.9.171	PSL-BRC1-014
-
-resources: {}

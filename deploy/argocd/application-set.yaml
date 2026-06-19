@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: potencia-sfp
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - site: barracas
+  template:
+    metadata:
+      name: potencia-sfp-{{ site }}
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: https://whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git
+        targetRevision: HEAD
+        path: deploy
+        helm:
+          valueFiles:
+          - values-{{ site }}.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: grafana-operaciones
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

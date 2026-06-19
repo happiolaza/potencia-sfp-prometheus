@@ -1,31 +1,35 @@
-{{- define "potencia-sfp-barracas.name" -}}
-{{- if .Values.nameOverride -}}
-{{- .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{- define "potencia-site.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
 
-{{- define "potencia-sfp-barracas.fullname" -}}
+{{- define "potencia-site.fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- printf "%s-%s" .Release.Name (include "potencia-sfp-barracas.name" .) | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{- printf "potencia-%s" .Values.site.name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
 
-{{- define "potencia-sfp-barracas.labels" -}}
-helm.sh/chart: {{ include "potencia-sfp-barracas.name" . }}-{{ .Chart.Version }}
-app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
+{{- define "potencia-site.labels" -}}
+helm.sh/chart: {{ include "potencia-site.name" . }}-{{ .Chart.Version }}
+app.kubernetes.io/name: {{ include "potencia-site.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
 app.kubernetes.io/managed-by: Helm
-{{- end -}}
+site: {{ .Values.site.name }}
+environment: {{ .Values.site.environment }}
+{{- end }}
 
-{{- define "potencia-sfp-barracas.serviceAccountName" -}}
+{{- define "potencia-site.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "potencia-site.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+site: {{ .Values.site.name }}
+{{- end }}
+
+{{- define "potencia-site.serviceAccountName" -}}
 {{- if .Values.serviceAccount.name -}}
 {{- .Values.serviceAccount.name -}}
 {{- else -}}
-{{- include "potencia-sfp-barracas.fullname" . -}}
+{{- include "potencia-site.fullname" . -}}
 {{- end -}}
-{{- end -}}
+{{- end }}

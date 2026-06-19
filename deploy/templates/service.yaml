@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "potencia-sfp-barracas.fullname" . }}
+  name: {{ include "potencia-site.fullname" . }}
   labels:
-{{ include "potencia-sfp-barracas.labels" . | nindent 4 }}
+{{ include "potencia-site.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,5 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "potencia-site.selectorLabels" . | nindent 4 }}

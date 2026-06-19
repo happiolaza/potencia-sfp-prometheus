@@ -1,28 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "potencia-sfp-barracas.fullname" . }}
+  name: {{ include "potencia-site.fullname" . }}
   labels:
-{{ include "potencia-sfp-barracas.labels" . | nindent 4 }}
+{{ include "potencia-site.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "potencia-site.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "potencia-sfp-barracas.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "potencia-site.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "potencia-sfp-barracas.serviceAccountName" . }}
+      serviceAccountName: {{ include "potencia-site.serviceAccountName" . }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
       containers:
-        - name: {{ include "potencia-sfp-barracas.name" . }}
+        - name: {{ include "potencia-site.name" . }}
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -39,12 +37,12 @@ spec:
             - name: SWITCH_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.existingSecret | default (printf "%s-ssh" (include "potencia-sfp-barracas.fullname" .)) }}
+                  name: {{ .Values.existingSecret | default (printf "%s-ssh" (include "potencia-site.fullname" .)) }}
                   key: username
             - name: SWITCH_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.existingSecret | default (printf "%s-ssh" (include "potencia-sfp-barracas.fullname" .)) }}
+                  name: {{ .Values.existingSecret | default (printf "%s-ssh" (include "potencia-site.fullname" .)) }}
                   key: password
           {{- if .Values.probes.enabled }}
           livenessProbe:
@@ -69,6 +67,5 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: {{ include "potencia-sfp-barracas.fullname" . }}
+            name: {{ include "potencia-site.fullname" . }}
             defaultMode: 420
-
