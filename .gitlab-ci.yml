@@ -16,7 +16,8 @@ build:
     DOCKER_CONFIG: /kaniko/.docker
   before_script:
     - mkdir -p $DOCKER_CONFIG
-    - echo "{\"auths\":{\"$HARBOR_REGISTRY\":{\"auth\":\"$(echo -n ${HARBOR_USER}:${HARBOR_PASSWORD} | base64)\"}}}" > $DOCKER_CONFIG/config.json
+    - AUTH=$(printf '%s:%s' "$HARBOR_USER" "$HARBOR_PASSWORD" | base64 | tr -d '\n')
+    - printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$HARBOR_REGISTRY" "$AUTH" > $DOCKER_CONFIG/config.json
     - git clone https://gitlab+deploy-token-1:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - /kaniko/executor
