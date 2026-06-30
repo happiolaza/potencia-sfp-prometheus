@@ -1,4 +1,4 @@
-mode: ssh
+mode: api
 
 site:
   name: cuyo
