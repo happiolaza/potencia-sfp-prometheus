@@ -70,8 +70,9 @@ update-tag:
       sed "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml | base64 | tr -d '\n' > /tmp/content.b64
       printf '{"branch":"%s","content":"%s","commit_message":"chore: update image tag to %s [skip ci]","encoding":"base64"}' \
         "${CI_COMMIT_BRANCH}" "$(cat /tmp/content.b64)" "${CI_COMMIT_SHORT_SHA}" > /tmp/body.json
-      curl -sk -o /dev/null --request PUT \
+      RESPONSE=$(curl -sk --request PUT \
         --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --header "Content-Type: application/json" \
         --data @/tmp/body.json \
-        "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/${CI_PROJECT_ID}/repository/files/deploy%2Fvalues.yaml"
+        "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/${CI_PROJECT_ID}/repository/files/deploy%2Fvalues.yaml" 2>&1)
+      echo "API response: $RESPONSE"
