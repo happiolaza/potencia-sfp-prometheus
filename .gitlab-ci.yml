@@ -1,6 +1,5 @@
 stages:
   - build
-  - deploy
 
 variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
@@ -50,24 +49,3 @@ build-api:
   script:
     - sh scripts/build.sh
 
-update-tag:
-  stage: deploy
-  image:
-    name: $HARBOR_REGISTRY/utils/curl:latest
-    entrypoint: [""]
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(main|cicd-fix)$/
-      when: always
-    - when: never
-  before_script:
-    - apk add --no-cache git
-  script:
-    - |
-      git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
-      sed -i "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml
-      git config user.name "GitLab CI"
-      git config user.email "ci@whitecicd"
-      git add deploy/values.yaml
-      git diff --cached --quiet || git commit -m "chore: update image tag to ${CI_COMMIT_SHORT_SHA} [skip ci]"
-      git remote set-url origin https://gitlab-ci-token:${CI_JOB_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git
-      git push origin HEAD:"${CI_COMMIT_BRANCH}"
