@@ -1,1 +1,34 @@
-test
+replicaCount: 1
+
+mode: ssh
+
+image:
+  repository: ""
+  tag: latest
+  pullPolicy: IfNotPresent
+
+site:
+  name: ""
+  environment: production
+
+service:
+  type: ClusterIP
+  port: 5000
+  targetPort: http
+
+serviceAccount:
+  create: true
+  name: ""
+
+fullnameOverride: ""
+nameOverride: ""
+
+existingSecret: ""
+
+config:
+  elementSsh: ""
+
+resources: {}
+
+probes:
+  enabled: true
