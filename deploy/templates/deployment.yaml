@@ -27,7 +27,7 @@ spec:
             capabilities:
               drop:
                 - ALL
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ include "potencia-site.imageRepository" . }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

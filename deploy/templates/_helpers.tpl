@@ -33,3 +33,13 @@ site: {{ .Values.site.name }}
 {{- include "potencia-site.fullname" . -}}
 {{- end -}}
 {{- end }}
+
+{{- define "potencia-site.imageRepository" -}}
+{{- if .Values.image.repository }}
+{{- .Values.image.repository }}
+{{- else if eq .Values.mode "api" }}
+whiteregistry.cuyows.tcloud.ar/power-metrics/potencia-sfp-prometheus-dell-api
+{{- else }}
+whiteregistry.cuyows.tcloud.ar/power-metrics/potencia-sfp-prometehus-dell-ssh
+{{- end }}
+{{- end }}

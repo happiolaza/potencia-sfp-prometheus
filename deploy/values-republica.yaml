@@ -1,3 +1,5 @@
+mode: ssh
+
 site:
   name: republica
 
