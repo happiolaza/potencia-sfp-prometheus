@@ -46,6 +46,18 @@ def parse_interface_metrics(xml_data, source):
     ports = root.findall('.//port')
     for port in ports:
         port_name = port.find('name').text.replace('/', '_')
+        temperature = port.find('temperature')
+        voltage = port.find('voltage')
+        temp_state = port.find('temp-state')
+        voltage_state = port.find('voltage-state')
+        if temperature is not None:
+            metrics.append(f'switch_sfp_temperature{{interface="{port_name}", source="{source}"}} {temperature.text}\n')
+        if temp_state is not None:
+            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}", source="{source}"}} "{temp_state.text}"\n')
+        if voltage is not None:
+            metrics.append(f'switch_sfp_voltage{{interface="{port_name}", source="{source}"}} {voltage.text}\n')
+        if voltage_state is not None:
+            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}", source="{source}"}} "{voltage_state.text}"\n')
         channels = port.findall('.//channel')
         for channel in channels:
             sub_port = channel.find('sub-port').text

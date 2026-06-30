@@ -1,6 +1,6 @@
 import os
+import json
 import requests
-import xml.etree.ElementTree as ET
 from flask import Flask, Response
 from concurrent.futures import ThreadPoolExecutor
 from urllib3.exceptions import InsecureRequestWarning
@@ -20,11 +20,11 @@ with open('element.ssh', 'r') as file:
 
 
 def fetch_switch_metrics(ip, source):
-    url = f"https://{ip}/restconf/data/openconfig-platform:ports-state"
+    url = f"https://{ip}/restconf/data/dell-port:ports/ports-state"
     try:
         resp = requests.get(url, auth=(switch_username, switch_password), verify=False, timeout=15)
         resp.raise_for_status()
-        return parse_interface_metrics(resp.text, source)
+        return parse_interface_metrics(resp.json(), source)
     except requests.RequestException as e:
         return [f"# Error connecting to {ip}: {e}\n"]
 
@@ -39,42 +39,41 @@ def get_metrics():
     return Response("".join(switch_metrics), mimetype='text/plain')
 
 
-def parse_interface_metrics(xml_data, source):
+def parse_interface_metrics(data, source):
     metrics = []
-    root = ET.fromstring(xml_data)
-    ports = root.findall('.//port')
+    ports = data.get('dell-port:ports-state', {}).get('port', [])
     for port in ports:
-        port_name = port.find('name').text.replace('/', '_')
+        port_name = port.get('name', '').replace('/', '_')
 
-        temperature = port.find('temperature')
-        temp_state = port.find('temp-state')
-        voltage = port.find('voltage')
-        voltage_state = port.find('voltage-state')
+        temperature = port.get('temperature')
+        temp_state = port.get('temp-state')
+        voltage = port.get('voltage')
+        voltage_state = port.get('voltage-state')
 
         if temperature is not None:
-            metrics.append(f'switch_sfp_temperature{{interface="{port_name}",source="{source}"}} {temperature.text}\n')
+            metrics.append(f'switch_sfp_temperature{{interface="{port_name}",source="{source}"}} {temperature}\n')
         if temp_state is not None:
-            val = 1 if temp_state.text == 'normal-status' else 0
-            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}",source="{source}",state="{temp_state.text}"}} {val}\n')
+            val = 1 if temp_state == 'normal-status' else 0
+            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}",source="{source}",state="{temp_state}"}} {val}\n')
         if voltage is not None:
-            metrics.append(f'switch_sfp_voltage{{interface="{port_name}",source="{source}"}} {voltage.text}\n')
+            metrics.append(f'switch_sfp_voltage{{interface="{port_name}",source="{source}"}} {voltage}\n')
         if voltage_state is not None:
-            val = 1 if voltage_state.text == 'normal-status' else 0
-            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}",source="{source}",state="{voltage_state.text}"}} {val}\n')
+            val = 1 if voltage_state == 'normal-status' else 0
+            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}",source="{source}",state="{voltage_state}"}} {val}\n')
 
-        channels = port.findall('.//channel')
+        channels = port.get('channel', [])
         for channel in channels:
-            sub_port = channel.find('sub-port').text
-            rx_power = channel.find('rx-power')
-            tx_power = channel.find('tx-power')
-            tx_bias_current = channel.find('tx-bias-current')
+            sub_port = channel.get('sub-port', '')
+            rx_power = channel.get('rx-power')
+            tx_power = channel.get('tx-power')
+            tx_bias_current = channel.get('tx-bias-current')
 
-            if rx_power is not None:
-                metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {rx_power.text}\n')
-            if tx_power is not None:
-                metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_power.text}\n')
+            if rx_power is not None and rx_power != 'nan':
+                metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {rx_power}\n')
+            if tx_power is not None and tx_power != 'nan':
+                metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_power}\n')
             if tx_bias_current is not None:
-                metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_bias_current.text}\n')
+                metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_bias_current}\n')
     return metrics
 
 
