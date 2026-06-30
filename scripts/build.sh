@@ -10,3 +10,15 @@ printf '{"auths":{"whiteregistry.cuyows.tcloud.ar":{"auth":"%s"}}}' "$(printf '%
   --skip-tls-verify-registry "$HARBOR_REGISTRY" \
   --destination "$HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
   --destination "$HARBOR_REGISTRY/$DESTINATION_PROJECT/$IMAGE_NAME:latest"
+
+# update image tag in values.yaml and push via GitLab API (base64 encoded)
+sed -i "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" "${CI_PROJECT_DIR}/deploy/values.yaml"
+CONTENT_B64=$(base64 "${CI_PROJECT_DIR}/deploy/values.yaml" | tr -d '\n')
+printf '{"branch":"%s","content":"%s","commit_message":"chore: update image tag to %s [skip ci]","encoding":"base64"}' \
+  "${CI_COMMIT_BRANCH}" "${CONTENT_B64}" "${CI_COMMIT_SHORT_SHA}" > /tmp/body.json
+wget -q -O /dev/null --no-check-certificate \
+  --method PUT \
+  --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+  --header "Content-Type: application/json" \
+  --body-file /tmp/body.json \
+  "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/${CI_PROJECT_ID}/repository/files/deploy%2Fvalues.yaml"

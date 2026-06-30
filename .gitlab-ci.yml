@@ -19,7 +19,6 @@ build-ssh:
         - app-ssh/**/*
         - .gitlab-ci.yml
         - scripts/build.sh
-        - scripts/update-manifest.sh
       when: always
     - when: never
   image:
@@ -29,7 +28,6 @@ build-ssh:
     - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - sh scripts/build.sh
-    - sh scripts/update-manifest.sh
 
 build-api:
   stage: build
@@ -41,7 +39,6 @@ build-api:
         - app-api/**/*
         - .gitlab-ci.yml
         - scripts/build.sh
-        - scripts/update-manifest.sh
       when: always
     - when: never
   image:
@@ -51,4 +48,3 @@ build-api:
     - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - sh scripts/build.sh
-    - sh scripts/update-manifest.sh
