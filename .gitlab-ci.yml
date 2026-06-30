@@ -5,6 +5,8 @@ variables:
   HARBOR_REGISTRY: whiteregistry.cuyows.tcloud.ar
   HARBOR_PROJECT: whitecicd-pipeline
   DESTINATION_PROJECT: power-metrics
+  HARBOR_USER: admin
+  HARBOR_PASSWORD: TefAr123
   GIT_STRATEGY: none
 
 build-ssh:
