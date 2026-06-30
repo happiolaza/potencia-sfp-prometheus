@@ -51,22 +51,22 @@ def parse_interface_metrics(xml_data, source):
         temp_state = port.find('temp-state')
         voltage_state = port.find('voltage-state')
         if temperature is not None:
-            metrics.append(f'switch_sfp_temperature{{interface="{port_name}", source="{source}"}} {temperature.text}\n')
+            metrics.append(f'switch_sfp_temperature{{interface="{port_name}", device="{source}"}} {temperature.text}\n')
         if temp_state is not None:
-            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}", source="{source}"}} "{temp_state.text}"\n')
+            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}", device="{source}"}} "{temp_state.text}"\n')
         if voltage is not None:
-            metrics.append(f'switch_sfp_voltage{{interface="{port_name}", source="{source}"}} {voltage.text}\n')
+            metrics.append(f'switch_sfp_voltage{{interface="{port_name}", device="{source}"}} {voltage.text}\n')
         if voltage_state is not None:
-            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}", source="{source}"}} "{voltage_state.text}"\n')
+            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}", device="{source}"}} "{voltage_state.text}"\n')
         channels = port.findall('.//channel')
         for channel in channels:
             sub_port = channel.find('sub-port').text
             rx_power = channel.find('rx-power').text
             tx_power = channel.find('tx-power').text
             tx_bias_current = channel.find('tx-bias-current').text
-            metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}", subport="{sub_port}", source="{source}"}} {rx_power}\n')
-            metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}", subport="{sub_port}", source="{source}"}} {tx_power}\n')
-            metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}", subport="{sub_port}", source="{source}"}} {tx_bias_current}\n')
+            metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}", subport="{sub_port}", device="{source}"}} {rx_power}\n')
+            metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}", subport="{sub_port}", device="{source}"}} {tx_power}\n')
+            metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}", subport="{sub_port}", device="{source}"}} {tx_bias_current}\n')
     return metrics
 
 if __name__ == '__main__':

@@ -51,15 +51,15 @@ def parse_interface_metrics(data, source):
         voltage_state = port.get('voltage-state')
 
         if temperature is not None:
-            metrics.append(f'switch_sfp_temperature{{interface="{port_name}",source="{source}"}} {temperature}\n')
+            metrics.append(f'switch_sfp_temperature{{interface="{port_name}",device="{source}"}} {temperature}\n')
         if temp_state is not None:
             val = 1 if temp_state == 'normal-status' else 0
-            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}",source="{source}",state="{temp_state}"}} {val}\n')
+            metrics.append(f'switch_sfp_temp_state{{interface="{port_name}",device="{source}",state="{temp_state}"}} {val}\n')
         if voltage is not None:
-            metrics.append(f'switch_sfp_voltage{{interface="{port_name}",source="{source}"}} {voltage}\n')
+            metrics.append(f'switch_sfp_voltage{{interface="{port_name}",device="{source}"}} {voltage}\n')
         if voltage_state is not None:
             val = 1 if voltage_state == 'normal-status' else 0
-            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}",source="{source}",state="{voltage_state}"}} {val}\n')
+            metrics.append(f'switch_sfp_voltage_state{{interface="{port_name}",device="{source}",state="{voltage_state}"}} {val}\n')
 
         channels = port.get('channel', [])
         for channel in channels:
@@ -69,11 +69,11 @@ def parse_interface_metrics(data, source):
             tx_bias_current = channel.get('tx-bias-current')
 
             if rx_power is not None and rx_power != 'nan':
-                metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {rx_power}\n')
+                metrics.append(f'switch_interface_channel_rx_power{{interface="{port_name}",subport="{sub_port}",device="{source}"}} {rx_power}\n')
             if tx_power is not None and tx_power != 'nan':
-                metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_power}\n')
+                metrics.append(f'switch_interface_channel_tx_power{{interface="{port_name}",subport="{sub_port}",device="{source}"}} {tx_power}\n')
             if tx_bias_current is not None:
-                metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}",subport="{sub_port}",source="{source}"}} {tx_bias_current}\n')
+                metrics.append(f'switch_interface_channel_tx_bias_current{{interface="{port_name}",subport="{sub_port}",device="{source}"}} {tx_bias_current}\n')
     return metrics
 
 
