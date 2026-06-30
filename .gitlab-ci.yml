@@ -10,11 +10,11 @@ variables:
 build-ssh:
   stage: build
   variables:
-    IMAGE_NAME: potencia-sfp-prometehus-cm
-    APP_CONTEXT: app
+    IMAGE_NAME: potencia-sfp-prometehus-dell-ssh
+    APP_CONTEXT: app-ssh
   rules:
     - changes:
-        - app/**/*
+        - app-ssh/**/*
         - .gitlab-ci.yml
         - scripts/build.sh
       when: always
@@ -30,7 +30,7 @@ build-ssh:
 build-api:
   stage: build
   variables:
-    IMAGE_NAME: potencia-sfp-prometehus-cm-api
+    IMAGE_NAME: potencia-sfp-prometheus-dell-api
     APP_CONTEXT: app-api
   rules:
     - changes:

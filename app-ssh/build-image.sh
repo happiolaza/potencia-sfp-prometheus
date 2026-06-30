@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-IMAGE_NAME="happiolaza/potencia-sfp-prometehus-cm:1.4"
+IMAGE_NAME="happiolaza/potencia-sfp-prometehus-dell-ssh:1.4"
 
 if command -v podman >/dev/null 2>&1; then
   builder=podman

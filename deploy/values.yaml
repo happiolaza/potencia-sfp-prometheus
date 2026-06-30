@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: whiteregistry.cuyows.tcloud.ar/power-metrics/potencia-sfp-prometehus-cm
+  repository: whiteregistry.cuyows.tcloud.ar/power-metrics/potencia-sfp-prometehus-dell-ssh
   tag: latest
   pullPolicy: IfNotPresent
 

@@ -93,7 +93,7 @@ spec:
         - name: potencia-sfp-barracas
           securityContext:
             {}
-          image: "happiolaza/potencia-sfp-prometehus-cm:1.4"
+          image: "happiolaza/potencia-sfp-prometehus-dell-ssh:1.4"
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
