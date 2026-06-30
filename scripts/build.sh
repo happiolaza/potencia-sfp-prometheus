@@ -2,7 +2,7 @@
 set -e
 
 mkdir -p "$DOCKER_CONFIG"
-printf '{"auths":{"whiteregistry.cuyows.tcloud.ar":{"auth":"YWRtaW46VGVmQXIxMjM="}}}' > "$DOCKER_CONFIG/config.json"
+printf '{"auths":{"whiteregistry.cuyows.tcloud.ar":{"auth":"%s"}}}' "$(printf '%s:%s' "${HARBOR_USER}" "${HARBOR_PASSWORD}" | base64)" > "$DOCKER_CONFIG/config.json"
 
 /kaniko/executor \
   --context "${CI_PROJECT_DIR}/${APP_CONTEXT}" \

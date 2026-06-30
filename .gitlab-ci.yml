@@ -26,6 +26,7 @@ build-ssh:
     - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - sh scripts/build.sh
+    - sh scripts/update-manifest.sh
 
 build-api:
   stage: build
@@ -46,3 +47,4 @@ build-api:
     - git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
   script:
     - sh scripts/build.sh
+    - sh scripts/update-manifest.sh
