@@ -52,19 +52,26 @@ build-api:
 
 update-tag:
   stage: deploy
-  image: alpine:latest
+  image:
+    name: $HARBOR_REGISTRY/utils/curl:latest
+    entrypoint: [""]
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|cicd-fix)$/
       when: always
     - when: never
-  before_script:
-    - apk add --no-cache curl git
   script:
     - |
-      git clone https://gitlab+deploy-token-3:${GIT_DEPLOY_TOKEN}@whitecicd-tt.cuyows.tcloud.ar/operaciones-red-cloud/potencia-sfp-prometheus.git .
-      sed -i "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml
-      git config user.name "GitLab CI"
-      git config user.email "ci@whitecicd"
-      git add deploy/values.yaml
-      git diff --cached --quiet || git commit -m "chore: update image tag to ${CI_COMMIT_SHORT_SHA} [skip ci]"
-      git push origin HEAD:"${CI_COMMIT_BRANCH}"
+      # fetch current values.yaml via GitLab API
+      mkdir -p deploy
+      curl -s --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/${CI_PROJECT_ID}/repository/files/deploy%2Fvalues.yaml/raw?ref=${CI_COMMIT_BRANCH}" \
+        -o deploy/values.yaml
+      # update image tag and push back via GitLab API
+      sed "s|^  tag: .*|  tag: ${CI_COMMIT_SHORT_SHA}|" deploy/values.yaml | base64 | tr -d '\n' > /tmp/content.b64
+      printf '{"branch":"%s","content":"%s","commit_message":"chore: update image tag to %s [skip ci]","encoding":"base64"}' \
+        "${CI_COMMIT_BRANCH}" "$(cat /tmp/content.b64)" "${CI_COMMIT_SHORT_SHA}" > /tmp/body.json
+      curl -s -o /dev/null --request PUT \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --header "Content-Type: application/json" \
+        --data @/tmp/body.json \
+        "https://whitecicd-tt.cuyows.tcloud.ar/api/v4/projects/${CI_PROJECT_ID}/repository/files/deploy%2Fvalues.yaml"
