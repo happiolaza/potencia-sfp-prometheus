@@ -19,6 +19,7 @@ build-ssh:
         - app-ssh/**/*
         - .gitlab-ci.yml
         - scripts/build.sh
+        - scripts/update-manifest.sh
       when: always
     - when: never
   image:
@@ -40,6 +41,7 @@ build-api:
         - app-api/**/*
         - .gitlab-ci.yml
         - scripts/build.sh
+        - scripts/update-manifest.sh
       when: always
     - when: never
   image:
