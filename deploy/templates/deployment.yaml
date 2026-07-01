@@ -23,7 +23,6 @@ spec:
         - name: {{ include "potencia-site.name" . }}
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -34,8 +33,6 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           env:
-            - name: GUNICORN_CMD_ARGS
-              value: --worker-tmp-dir /tmp
             - name: SWITCH_USERNAME
               valueFrom:
                 secretKeyRef:
