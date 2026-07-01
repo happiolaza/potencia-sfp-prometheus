@@ -29,6 +29,10 @@ def fetch_switch_metrics(ip, source):
         return [f"# Error connecting to {ip}: {e}\n"]
 
 
+@app.route('/health')
+def health():
+    return "OK\n"
+
 @app.route('/metrics')
 def get_metrics():
     switch_metrics = []
