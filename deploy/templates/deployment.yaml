@@ -63,6 +63,8 @@ spec:
               mountPath: /app/element.ssh
               subPath: element.ssh
               readOnly: true
+            - name: gunicorn-tmp
+              mountPath: /.gunicorn
             - name: tmp
               mountPath: /tmp
       volumes:
@@ -70,5 +72,7 @@ spec:
           configMap:
             name: {{ include "potencia-site.fullname" . }}
             defaultMode: 420
+        - name: gunicorn-tmp
+          emptyDir: {}
         - name: tmp
           emptyDir: {}
