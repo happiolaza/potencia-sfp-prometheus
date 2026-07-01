@@ -31,6 +31,10 @@ def fetch_switch_metrics(ip, source):
     finally:
         ssh_client.close()
 
+@app.route('/health')
+def health():
+    return "OK\n"
+
 @app.route('/metrics')
 def get_metrics():
     switch_metrics = []
